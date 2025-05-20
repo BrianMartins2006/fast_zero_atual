@@ -27,6 +27,7 @@ def create_user(user: UserSchema):
 def read_users():
     return {'users': database}
 
+
 @app.get('/users/{user_id}', response_model=UserPublic)
 def busca_id(user_id: int):
     if user_id > len(database) or user_id < 1:
