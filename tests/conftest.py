@@ -29,8 +29,8 @@ def client(session):
 def session():
     engine = create_engine(
         'sqlite:///:memory:',
-        connect_args={'check_same_thred': False},
-        pollclass=StaticPool,
+        connect_args={'check_same_thread': False},  # CORRETO
+        poolclass=StaticPool,  # CORRETO
     )
     table_registry.metadata.create_all(engine)
 

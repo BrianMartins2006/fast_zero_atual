@@ -10,8 +10,6 @@ from fast_sero.schemas import Message, UserList, UserPublic, UserSchema
 
 app = FastAPI()
 
-database = []  # Lista provisória para fins de estudo
-
 
 @app.get('/', status_code=HTTPStatus.OK, response_model=Message)
 def read_root():
@@ -102,4 +100,4 @@ def delete_user(user_id: int, session: Session = Depends(get_session)):
     session.delete(db_user)
     session.commit()
 
-    return {'message': 'User deleteddd'}
+    return {'message': 'User deleted'}
