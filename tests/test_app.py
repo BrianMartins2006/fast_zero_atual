@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-from fast_sero.schemas import UserPublic
+from fast_zero.schemas import UserPublic
 
 
 def test_root_deve_retornar_ok_e_ola_mundo(client):

@@ -7,9 +7,9 @@ from sqlalchemy import create_engine, event
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
-from fast_sero.app import app
-from fast_sero.database import get_session
-from fast_sero.models import User, table_registry
+from fast_zero.app import app
+from fast_zero.database import get_session
+from fast_zero.models import User, table_registry
 
 
 @pytest.fixture
