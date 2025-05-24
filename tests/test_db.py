@@ -2,7 +2,7 @@ from dataclasses import asdict
 
 from sqlalchemy import select
 
-from fast_zero.models import User
+from fast_sero.models import User
 
 
 def test_create_user(session, mock_db_time):

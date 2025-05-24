@@ -5,8 +5,8 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from fast_zero.models import table_registry
-from fast_zero.settings import Settings
+from fast_sero.models import table_registry
+from fast_sero.settings import Settings
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

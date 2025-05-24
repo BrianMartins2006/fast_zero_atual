@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-from fast_zero.schemas import UserPublic
+from fast_sero.schemas import UserPublic
 
 
 def test_root_deve_retornar_ok_e_ola_mundo(client):
@@ -62,3 +62,14 @@ def test_delete_user(client, user):
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {'message': 'User deleted'}
+
+
+def test_get_token(client, user):
+    response = client.post(
+        '/token',
+        data={'username': user.email, 'password': user.clean_password},
+    )
+    token = response.json()
+    assert response.status_code == HTTPStatus.OK
+    assert token['token_type'] == 'Bearer'
+    assert 'access_token' in token
