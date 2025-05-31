@@ -1,50 +1,78 @@
 from datetime import datetime, timedelta
+from http import HTTPStatus
 from zoneinfo import ZoneInfo
 
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from jwt import decode, encode
+from jwt.exceptions import ExpiredSignatureError, PyJWKError
 from pwdlib import PasswordHash
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from fast_sero.database import get_session
+from fast_sero.models import User
+from fast_sero.settings import Settings
 
+settings = Settings()
 pwd_context = PasswordHash.recommended()
-SECRET_KEY = 'Yous_secrets_key'
-ALGORITHM = 'HS256'
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/token')
-
-
-def get_password_has(password: str) -> str:
-    return pwd_context.hash(password)
-
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
 
 
 def create_access_token(data: dict):
     to_encode = data.copy()
-
     expire = datetime.now(tz=ZoneInfo('UTC')) + timedelta(
-        minutes=ACCESS_TOKEN_EXPIRE_MINUTES
+        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
     )
-
     to_encode.update({'exp': expire})
-    encode_jwt = encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = encode(
+        to_encode,
+        settings.SECRET_KEY,
+        algorithm=settings.ALGORITHM,
+    )
+    return encoded_jwt
 
-    return encode_jwt
+
+def get_password_hash(password: str):
+    return pwd_context.hash(password)
+
+
+def verify_password(plain_password: str, hashed_password: str):
+    return pwd_context.verify(plain_password, hashed_password)
+
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='auth/token')
 
 
 def get_current_user(
     session: Session = Depends(get_session),
     token: str = Depends(oauth2_scheme),
-): 
-    payload = decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-    username: str = payload.get('sub')
+):
+    credentials_exception = HTTPException(
+        status_code=HTTPStatus.UNAUTHORIZED,
+        detail='Could not validate credentials',
+        headers={'WWW-Authenticate': 'Bearer'},
+    )
 
-    # session.scalar(
-        # select(User).where(User.email == username)
-    # )
+    try:
+        payload = decode(
+            token,
+            settings.SECRET_KEY,
+            algorithms=[settings.ALGORITHM],
+        )
+        subject_email = payload.get('sub')
+
+        if not subject_email:
+            raise credentials_exception
+
+    except ExpiredSignatureError:
+        raise credentials_exception
+
+    except PyJWKError:
+        raise credentials_exception
+
+    user = session.scalar(select(User).where(User.email == subject_email))
+
+    if not user:
+        raise credentials_exception
+
+    return user
