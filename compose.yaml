@@ -13,6 +13,7 @@ services:
   fastzero_app:
     image: fast_sero
     build: .
+    entrypoint: ["sh", "/app/entrypoint.sh"]
     ports:
       - "8000:8000"
     depends_on:
